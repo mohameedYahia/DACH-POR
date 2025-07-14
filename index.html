@@ -11,9 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- MODIFICATION: Added a new "Job Occupancy Rate by Qualitative Group" section to the HR dashboard. -->
-    <!-- This new section uses a series of Gauge charts to display occupancy rates for different job groups. -->
-    <!-- JS MODIFICATION: Added calls in `initHrCharts` to create the new gauge charts with sample data. -->
+    <!-- MODIFICATION: Added AI Insights section to both HR and Transport dashboards. -->
+    <!-- Each section has a button that triggers a call to the Gemini API to generate contextual analysis. -->
+    <!-- JS MODIFICATION: Added `generateAiInsight` function to handle API calls and display results. Added event listeners for the new buttons. -->
 
     <style>
         body {
@@ -73,6 +73,25 @@
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #3b82f6;
+        }
+        .ai-insight-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .ai-insight-text {
+            min-height: 100px;
+        }
+        .generate-ai-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: background-color 0.3s;
+        }
+        .generate-ai-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
         }
         .filter-btn {
             background-color: #e5e7eb;
@@ -147,6 +166,15 @@
                     </div>
                 </header>
                 <div class="p-4 md:p-6">
+                    <!-- AI Insights Section -->
+                    <div class="ai-insight-card">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-bold mb-2">تحليلات الذكاء الاصطناعي (AI Insights)</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <p id="hr-ai-insight-text" class="ai-insight-text mb-4">اضغط على زر "توليد تحليل" للحصول على رؤى وتوصيات مخصصة بناءً على بيانات الموارد البشرية الحالية.</p>
+                        <button id="generate-hr-insight-btn" class="generate-ai-btn self-start font-semibold py-2 px-4 rounded-lg">توليد تحليل</button>
+                    </div>
                     <!-- General Indicators -->
                     <h3 class="section-header">مؤشرات عامة</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -225,6 +253,15 @@
                     </div>
                 </header>
                 <div class="p-4 md:p-6">
+                    <!-- AI Insights Section -->
+                    <div class="ai-insight-card">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-bold mb-2">تحليلات الذكاء الاصطناعي (AI Insights)</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <p id="transport-ai-insight-text" class="ai-insight-text mb-4">اضغط على زر "توليد تحليل" للحصول على رؤى وتوصيات مخصصة بناءً على بيانات أسطول المركبات الحالية.</p>
+                        <button id="generate-transport-insight-btn" class="generate-ai-btn self-start font-semibold py-2 px-4 rounded-lg">توليد تحليل</button>
+                    </div>
                     <!-- Operational Section -->
                     <h3 class="section-header">المؤشرات التشغيلية</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -291,6 +328,72 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalText = document.getElementById('modal-text');
     const closeModalBtn = document.getElementById('close-modal-btn');
     let transportChartsInitialized = false;
+
+    // --- AI Insight Generation ---
+    async function generateAiInsight(dashboardType) {
+        let prompt = '';
+        let textElement;
+        const buttonElement = event.target;
+        
+        buttonElement.disabled = true;
+
+        if (dashboardType === 'hr') {
+            textElement = document.getElementById('hr-ai-insight-text');
+            prompt = `بصفتك محلل بيانات خبير في الموارد البشرية، قم بتحليل بيانات لوحة المعلومات التالية:
+- نسبة الدوران الوظيفي: 8.2% (الهدف أقل من 10%)
+- عدد الاستقالات: يظهر اتجاهًا تصاعديًا في آخر 6 أشهر.
+- نسبة الموظفين ذوي الأداء المرتفع: 22% (الهدف 25%).
+- نسبة إشغال الوظائف التخصصية: 88%.
+- نسبة الرضا عن التدريب: 92%.
+بناءً على هذه البيانات، قدم 3 رؤى رئيسية واقترح 3 إجراءات قابلة للتنفيذ لتحسين الأداء وتقليل المخاطر. اجعل الرد على شكل نقاط واضحة وموجزة باللغة العربية.`;
+        } else if (dashboardType === 'transport') {
+            textElement = document.getElementById('transport-ai-insight-text');
+            prompt = `بصفتك مدير أسطول خبير، قم بتحليل بيانات لوحة المعلومات التالية:
+- نسبة التوافر التشغيلي: 92%.
+- متوسط زمن الإصلاح: يظهر اتجاهًا تصاعديًا.
+- نسبة الأعطال المتكررة: 18% (مرتفعة).
+- عدد المركبات خارج الصيانة الدورية: 7 مركبات.
+- درجة الخطر التشغيلي: 6.8 (متوسط).
+بناءً على هذه البيانات، قدم 3 رؤى رئيسية واقترح 3 إجراءات قابلة للتنفيذ لزيادة الكفاءة التشغيلية وتقليل المخاطر والتكاليف. اجعل الرد على شكل نقاط واضحة وموجزة باللغة العربية.`;
+        }
+
+        if (!textElement) return;
+        textElement.innerHTML = '<div class="flex items-center justify-center"><svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جارٍ التحليل...</span></div>';
+
+        try {
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const generatedText = result.candidates[0].content.parts[0].text;
+                textElement.innerHTML = generatedText.replace(/\n/g, '<br>');
+            } else {
+                textElement.textContent = 'عذرًا، لم نتمكن من توليد التحليل. يرجى المحاولة مرة أخرى.';
+            }
+        } catch (error) {
+            console.error("AI Insight Error:", error);
+            textElement.textContent = 'حدث خطأ أثناء الاتصال بخدمة الذكاء الاصطناعي. يرجى التحقق من اتصالك والمحاولة لاحقًا.';
+        } finally {
+             buttonElement.disabled = false;
+        }
+    }
+
 
     // --- Modal Logic ---
     function showModal(text) {
@@ -464,10 +567,14 @@ document.addEventListener('DOMContentLoaded', function () {
     timeFilter.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
             timeFilter.querySelector('.active').classList.remove('active');
-e.target.classList.add('active');
+            e.target.classList.add('active');
             initTransportDashboard(e.target.dataset.period);
         }
     });
+    
+    // --- AI Insight Button Listeners ---
+    document.getElementById('generate-hr-insight-btn').addEventListener('click', () => generateAiInsight('hr'));
+    document.getElementById('generate-transport-insight-btn').addEventListener('click', () => generateAiInsight('transport'));
 
     // Initial Load
     initHrCharts();
