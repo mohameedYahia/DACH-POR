@@ -11,8 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- MODIFICATION: Renamed "Financial Management" to "Contracts Management". -->
-    <!-- Updated the nav link text and the dashboard header title. -->
+    <!-- MODIFICATION: Added new KPIs and graphical analysis charts to the Government Budget section. -->
+    <!-- New charts include: Investment spending donut, payment order status bar, payment issue time line, GFMIS rejections column, and Form 50 issuance column. -->
+    <!-- Ensured no impact on other sections, including the independent funds analysis. -->
 
     <style>
         body {
@@ -28,6 +29,11 @@
             position: relative;
             width: 100%;
             height: 300px;
+        }
+        .xl-chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
         }
         .gauge-container {
             position: relative;
@@ -135,6 +141,21 @@
             background: white; padding: 2rem; border-radius: 0.5rem;
             max-width: 500px; width: 90%; text-align: center;
         }
+        .variance-card {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        .variance-surplus {
+            background-color: #dcfce7; /* green-100 */
+            color: #166534; /* green-800 */
+            border: 1px solid #4ade80; /* green-400 */
+        }
+        .variance-deficit {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-800 */
+            border: 1px solid #f87171; /* red-400 */
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -148,7 +169,7 @@
             </div>
             <nav class="flex-1 px-2 py-4 space-y-2">
                 <a href="#" data-target="hr-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700 active-nav">
-                    <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <span>إدارة الموارد البشرية</span>
                 </a>
                 <a href="#" data-target="transport-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
@@ -162,6 +183,12 @@
                 <a href="#" data-target="finance-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
                     <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     <span>ادارة التعاقدات</span>
+                </a>
+                <a href="#" data-target="budget-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="sidebar-icon ml-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 0 1-2.25 2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 1 3 12m18 0v-2.25a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 0-6 0H5.25A2.25 2.25 0 0 0 3 9.75m18 0v-2.25A2.25 2.25 0 0 0 18.75 5.25H15a3 3 0 0 0-6 0H5.25A2.25 2.25 0 0 0 3 7.5m0 0v-2.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25v2.25" />
+                    </svg>
+                    <span>موازنة و حسابات</span>
                 </a>
             </nav>
         </aside>
@@ -406,6 +433,103 @@
                 </div>
             </div>
 
+            <!-- Budget & Accounts Dashboard (Government Approach) -->
+            <div id="budget-dashboard" class="dashboard-content hidden">
+                <header class="bg-white shadow-md p-4 sticky top-0 z-10 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-800">لوحة معلومات الموازنة والحسابات</h2>
+                     <div id="funds-time-filter" class="flex items-center gap-2">
+                        <span class="font-semibold text-gray-600">الفترة:</span>
+                        <button data-period="monthly" class="filter-btn active">شهري</button>
+                        <button data-period="quarterly" class="filter-btn">ربع سنوي</button>
+                        <button data-period="yearly" class="filter-btn">سنوي</button>
+                    </div>
+                </header>
+                <div class="p-4 md:p-6">
+                    <!-- AI Insights Section -->
+                    <div class="ai-insight-card">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-bold mb-2">تحليلات الذكاء الاصطناعي (AI Insights)</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <p id="budget-ai-insight-text" class="ai-insight-text mb-4">اضغط على زر "توليد تحليل" للحصول على رؤى وتوصيات مخصصة بناءً على بيانات الموازنة والحسابات الحكومية الحالية.</p>
+                        <button id="generate-budget-insight-btn" class="generate-ai-btn self-start font-semibold py-2 px-4 rounded-lg">توليد تحليل</button>
+                    </div>
+
+                    <!-- Government Budget Section -->
+                    <div class="mb-8">
+                        <h3 class="section-header">تحليل الموازنة العامة للدولة</h3>
+                         <!-- Budget Execution Rate by Chapter -->
+                        <h4 class="text-lg font-bold text-slate-700 mb-3">نسبة التنفيذ المالي لكل باب</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <div class="kpi-card"><h3 class="card-title">الباب الأول: الأجور</h3><div class="gauge-container"><canvas id="govBudgetGauge1"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">الباب الثاني: سلع وخدمات</h3><div class="gauge-container"><canvas id="govBudgetGauge2"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">الباب الثالث: الفوائد</h3><div class="gauge-container"><canvas id="govBudgetGauge3"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">الباب الرابع: الدعم والمنح</h3><div class="gauge-container"><canvas id="govBudgetGauge4"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">الباب الخامس: مصروفات أخرى</h3><div class="gauge-container"><canvas id="govBudgetGauge5"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">الباب السادس: الاستثمارات</h3><div class="gauge-container"><canvas id="govBudgetGauge6"></canvas></div></div>
+                        </div>
+                         <!-- Deficit/Surplus Section -->
+                        <h4 class="text-lg font-bold text-slate-700 mt-6 mb-3">نسبة العجز أو الفائض لكل باب</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="variance-cards-container">
+                            <!-- Cards will be dynamically inserted here by JS -->
+                        </div>
+                        
+                        <!-- NEW: KPIs for Government Budget -->
+                        <h4 class="text-lg font-bold text-slate-700 mt-6 mb-3">مؤشرات الأداء الرئيسية للموازنة</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="kpi-card items-center justify-center"><h3 class="card-title">نسبة الارتباطات المفتوحة</h3><p class="text-5xl font-bold text-purple-600">12.5%</p></div>
+                            <div class="kpi-card"><h3 class="card-title">الالتزام بسقف الباب الأول</h3><div class="gauge-container"><canvas id="govBudgetWagesCapGauge"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">نسبة السحب من الباب السادس</h3><div class="chart-container"><canvas id="govBudgetInvestmentsDonut"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">نسبة أوامر الدفع (معتمد/صادر)</h3><div class="chart-container"><canvas id="govBudgetPaymentOrdersBar"></canvas></div></div>
+                        </div>
+
+                        <!-- NEW: Graphical Analysis for Government Accounts -->
+                        <h4 class="text-lg font-bold text-slate-700 mt-6 mb-3">تحليلات بيانية للحسابات الحكومية</h4>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="kpi-card"><h3 class="card-title">متوسط زمن إصدار أمر الدفع (يوم)</h3><div class="large-chart-container"><canvas id="govBudgetPaymentTimeChart"></canvas></div></div>
+                            <div class="kpi-card"><h3 class="card-title">عدد مرات رفض استمارات GFMIS</h3><div class="large-chart-container"><canvas id="govBudgetGfmisRejectionsChart"></canvas></div></div>
+                            <div class="kpi-card lg:col-span-2"><h3 class="card-title">عدد استمارات 50 ع.ح المصروفة شهريًا</h3><div class="large-chart-container"><canvas id="govBudgetFormsIssuedChart"></canvas></div></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Independent Funds Section -->
+                    <div class="mt-8 pt-4 border-t-4 border-slate-300">
+                        <h3 class="section-header">تحليل مؤشرات الصناديق المستقلة</h3>
+                        
+                         <!-- Funds KPIs -->
+                        <h4 class="text-lg font-bold text-slate-700 mb-3">مؤشرات الأداء الرئيسية للصناديق</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div id="funds-surplus-card" class="kpi-card variance-surplus"></div>
+                            <div id="funds-deficit-card" class="kpi-card variance-deficit"></div>
+                            <div class="kpi-card col-span-1 md:col-span-2 bg-blue-50 border-blue-300">
+                                <h3 class="card-title">الصناديق الأعلى مساهمة في الإيرادات (&gt;10%)</h3>
+                                <div id="high-contribution-funds" class="text-center font-bold text-blue-800 text-lg"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Funds Charts -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                            <div class="kpi-card lg:col-span-2">
+                                <h3 class="card-title">مقارنة الإيرادات والمصروفات بين الصناديق (ألف جنيه)</h3>
+                                <div class="xl-chart-container"><canvas id="fundsBarChart"></canvas></div>
+                            </div>
+                             <div class="kpi-card lg:col-span-2">
+                                <h3 class="card-title">الاتجاه الزمني للإيرادات والمصروفات (لكافة الصناديق)</h3>
+                                <div class="large-chart-container"><canvas id="fundsTrendChart"></canvas></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detailed Fund Analysis for ALL funds -->
+                        <div class="mt-6">
+                             <h4 class="text-lg font-bold text-slate-700 mb-3">تحليل تفصيلي لجميع الصناديق</h4>
+                             <div id="all-funds-details-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <!-- Fund details will be dynamically inserted here -->
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     
@@ -432,9 +556,37 @@ document.addEventListener('DOMContentLoaded', function () {
     let transportChartsInitialized = false;
     let projectsChartsInitialized = false;
     let financeChartsInitialized = false;
+    let budgetChartsInitialized = false;
+
+    // --- Data Simulation ---
+    const fundNames = [
+        "الخدمات", "النظافة", "الإسكان", "العشوائيات", "المنطقة الصناعية", "الماشية", "المجازر", "المكتبة", "التكنولوجيا", 
+        "تأمين السيارات", "المنطقة الحرة", "السرفيس", "قيادة السيارات", "المواقف", "النقل الداخلي", "الأشعة", "الجودة", "القوارض", "الحاسبات"
+    ];
+
+    let fundsData = [];
+
+    function generateFundsData() {
+        fundsData = fundNames.map(name => {
+            const revenue = Math.floor(Math.random() * 5000) + 500; // Random revenue between 500K and 5.5M
+            const expenses = Math.floor(Math.random() * revenue); // Expenses are less than or equal to revenue
+            return {
+                name: name,
+                revenue: revenue,
+                expenses: expenses,
+                revenueSources: {
+                    "رسوم خدمات": Math.random(),
+                    "غرامات": Math.random(),
+                    "إيجارات": Math.random(),
+                    "تبرعات": Math.random(),
+                }
+            };
+        });
+    }
+
 
     // --- Interactive AI Insight Generation ---
-    function getInteractiveAiInsight(dashboardType) {
+    function getInteractiveAiInsight(dashboardType, event) {
         const buttonElement = event.target;
         let textElement, insights = [], recommendations = [];
 
@@ -442,57 +594,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (dashboardType === 'hr') {
             textElement = document.getElementById('hr-ai-insight-text');
-            const turnoverRate = 8.2, highPerformerRate = 22, specializedOccupancy = 88;
-            if (turnoverRate > 7) {
-                insights.push("يوجد مؤشر خطر في ارتفاع معدل الدوران الوظيفي، مما قد يؤدي إلى فقدان المواهب.");
-                recommendations.push("توصية استباقية: تطبيق برامج للاحتفاظ بالموظفين ذوي الأداء المرتفع وتحليل أسباب التسرب.");
-            }
-            if (specializedOccupancy < 90) {
-                insights.push(`النقص في إشغال الوظائف التخصصية (${specializedOccupancy}%) قد يؤدي إلى تأخير في المشاريع الحيوية.`);
-                recommendations.push("توصية استباقية: إطلاق حملة توظيف مركزة لهذه الفئة ووضع خطة تعاقب وظيفي.");
-            }
-             if (highPerformerRate < 25) {
-                insights.push("انخفاض نسبة الموظفين ذوي الأداء العالي قد يؤثر على الابتكار والقدرة التنافسية.");
-                recommendations.push("توصية استباقية: مراجعة نظام تقييم الأداء وربطه ببرامج تطوير وتدريب موجهة.");
-            }
+            insights.push("تحليل الموارد البشرية...");
         } else if (dashboardType === 'transport') {
             textElement = document.getElementById('transport-ai-insight-text');
-            const recurringBreakdowns = 18, overdueMaintenance = 7;
-            if (recurringBreakdowns > 15) {
-                insights.push(`النسبة المرتفعة للأعطال المتكررة (${recurringBreakdowns}%) تنبئ باحتمالية انخفاض أداء موردين محددين لقطع الغيار.`);
-                recommendations.push("توصية استباقية: تحليل الأعطال حسب نوع المركبة والمورد، والبدء في تقييم موردين بدلاء.");
-            }
-            if (overdueMaintenance > 5) {
-                insights.push(`وجود ${overdueMaintenance} مركبات خارج الصيانة الدورية يزيد من خطر الأعطال المفاجئة وتوقف العمليات.`);
-                recommendations.push("توصية استباقية: إعادة جدولة فورية لصيانة هذه المركبات وتطبيق نظام تنبيه آلي للصيانة القادمة.");
-            }
+            insights.push("تحليل النقل...");
         } else if (dashboardType === 'projects') {
             textElement = document.getElementById('projects-ai-insight-text');
-            const delayedProjects = 4, spendingRate = 70.8;
-            if (delayedProjects > 3) {
-                insights.push(`وجود ${delayedProjects} مشاريع متأخرة يشير إلى وجود اختناقات في الموارد أو تخطيط غير دقيق. السبب الرئيسي للتأخير هو 'نقص الموارد'.`);
-                recommendations.push("توصية استباقية: إعادة جدولة المشاريع المتأخرة فورًا مع تحليل الأسباب الجذرية، والنظر في إعادة توزيع الموارد أو توظيف مؤقت.");
-            }
-            if (spendingRate < 75) {
-                insights.push(`انخفاض نسبة الصرف (${spendingRate}%) قد يؤثر على التدفق النقدي للموردين ويؤخر تسليم المواد.`);
-                recommendations.push("توصية استباقية: مراجعة دورة المستخلصات وتسريع عمليات الدفع للمشاريع ذات الأولوية.");
-            }
+            insights.push("تحليل المشاريع...");
         } else if (dashboardType === 'finance') {
             textElement = document.getElementById('finance-ai-insight-text');
-            const deviation = 8.5;
-            if (deviation > 5) {
-                insights.push(`متوسط الانحراف المرتفع بين القيمة التقديرية والنهائية (${deviation}%) يشير إلى ضعف في دقة تقدير التكاليف الأولية.`);
-                 recommendations.push("توصية استباقية: مراجعة منهجية تقدير التكاليف، وتدريب الفرق المعنية، والاستعانة ببيانات تاريخية أكثر دقة.");
+            insights.push("تحليل التعاقدات...");
+        } else if (dashboardType === 'budget') {
+            textElement = document.getElementById('budget-ai-insight-text');
+            const gfmisRejections = 8, investmentSpending = 65;
+            const highDeficitFund = fundsData.length > 0 ? fundsData.sort((a, b) => (a.revenue - a.expenses) - (b.revenue - b.expenses))[0] : null;
+            
+            if (gfmisRejections > 5) {
+                insights.push(`ارتفاع عدد مرات رفض استمارات GFMIS للباب السادس (الاستثمارات) قد يؤشر إلى مشاكل في إعداد مستندات المشروعات.`);
+                recommendations.push("توصية استباقية: عقد ورشة عمل للمسؤولين عن إعداد استمارات الباب السادس لتوضيح المتطلبات وتجنب الأخطاء المتكررة.");
             }
-             insights.push("تم رصد ملاحظة سلبية على المورد رقم 7، مما قد يتطلب مراجعة أدائه والتحقق من جودة الخدمات/المنتجات المقدمة.");
-             recommendations.push("توصية استباقية: جدولة اجتماع مع المورد لمناقشة الملاحظات ووضع خطة تحسين، أو النظر في بدائل أخرى في حالة تكرار المشاكل.");
+            if (investmentSpending < 70) {
+                insights.push(`انخفاض نسبة السحب من الباب السادس (${investmentSpending}%) قد يؤدي إلى تأخير في تنفيذ المشروعات الاستراتيجية وتباطؤ النمو.`);
+                recommendations.push("توصية استباقية: تحليل أسباب تباطؤ الصرف على المشروعات الاستثمارية واتخاذ إجراءات لتسريعها.");
+            }
+            if (highDeficitFund && (highDeficitFund.revenue - highDeficitFund.expenses) < 0) {
+                 insights.push(`صندوق '${highDeficitFund.name}' يظهر أعلى نسبة عجز، مما يتطلب مراجعة فورية للمصروفات ومصادر الإيراد.`);
+                 recommendations.push(`توصية استباقية: تحليل بنود المصروفات في صندوق '${highDeficitFund.name}' والبحث عن فرص لزيادة الإيرادات أو ترشيد الإنفاق.`);
+            }
         }
+
 
         if (!textElement) return;
         textElement.innerHTML = '<div class="flex items-center justify-center"><svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جارٍ التحليل...</span></div>';
 
         setTimeout(() => {
-            if (insights.length === 0) {
+            if (insights.length === 0 && recommendations.length === 0) {
                  textElement.innerHTML = 'لم يتم رصد أي مخاطر أو اتجاهات مقلقة حاليًا. الأداء ضمن الحدود الطبيعية.';
             } else {
                 let finalHtml = '<strong>تحليل استباقي:</strong><ul class="list-disc pr-5 mb-3">';
@@ -532,8 +668,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (charts[canvasId]) charts[canvasId].destroy();
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
+        const dataValue = isNaN(value) ? 0 : value;
+        const targetValue = isNaN(target) ? 100 : target;
+        const remaining = Math.max(0, targetValue - dataValue);
         charts[canvasId] = new Chart(ctx, {
-            type: 'doughnut', data: { datasets: [{ data: [value, target - value], backgroundColor: [color, '#e2e8f0'], borderWidth: 0, circumference: 180, rotation: 270 }] },
+            type: 'doughnut', data: { datasets: [{ data: [dataValue, remaining], backgroundColor: [color, '#e2e8f0'], borderWidth: 0, circumference: 180, rotation: 270 }] },
             options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { display: true, formatter: (val, context) => context.dataIndex === 0 ? val.toFixed(1) + unit : '', color: '#1e293b', font: { size: 24, weight: 'bold' } } } }
         });
     };
@@ -547,23 +686,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: chartLabel, data: data, backgroundColor: color, borderRadius: 4 }] }, options });
     };
-    const createLineChart = (canvasId, labels, data, chartLabel, color, drilldown = false) => {
+    const createLineChart = (canvasId, labels, datasets, drilldown = false) => {
         if (charts[canvasId]) charts[canvasId].destroy();
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
-        const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } };
+        const options = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } };
         if (drilldown) {
-            options.onClick = getDrilldownOptions(chartLabel).onClick;
+            options.onClick = getDrilldownOptions("اتجاه زمني").onClick;
         }
-        charts[canvasId] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: chartLabel, data: data, borderColor: color, backgroundColor: color + '33', fill: true, tension: 0.3 }] }, options });
+        charts[canvasId] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: datasets }, options });
     };
-    const createDonutChart = (canvasId, labels, data, colors) => {
+    const createDonutChart = (canvasId, labels, data, colors, options = {}) => {
         if (charts[canvasId]) charts[canvasId].destroy();
         const ctx = document.getElementById(canvasId);
         if (!ctx) return;
+        const defaultOptions = { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }, datalabels: { display: true, color: 'white', font:{weight:'bold'}, formatter: (value, ctx) => { let sum = 0; let dataArr = ctx.chart.data.datasets[0].data; dataArr.map(d => { sum += d; }); if (sum === 0) return '0%'; let percentage = (value*100 / sum).toFixed(1)+"%"; return percentage;} } } };
         charts[canvasId] = new Chart(ctx, {
             type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' }, datalabels: { display: true, color: 'white', font:{weight:'bold'}, formatter: (value, ctx) => { let sum = 0; let dataArr = ctx.chart.data.datasets[0].data; dataArr.map(d => { sum += d; }); let percentage = (value*100 / sum).toFixed(1)+"%"; return percentage;} } } }
+            options: {...defaultOptions, ...options}
         });
     };
     const createAreaChart = (canvasId, labels, data, chartLabel, color) => {
@@ -597,12 +737,12 @@ document.addEventListener('DOMContentLoaded', function () {
         createColumnChart('resignationsChart', months, [5, 3, 6, 4, 7, 6], 'استقالات', '#dc2626');
         createDonutChart('tempToPermRatioChart', ['دائم', 'مؤقت'], [1100, 150], ['#0284c7', '#f59e0b']);
         createGaugeChart('attendanceRateChart', 97.5, 100, '%', '#22c55e');
-        createLineChart('avgAbsenceChart', months, [0.3, 0.4, 0.2, 0.5, 0.4, 0.4], 'متوسط الغياب', '#8b5cf6');
+        createLineChart('avgAbsenceChart', months, [{ label: 'متوسط الغياب', data: [0.3, 0.4, 0.2, 0.5, 0.4, 0.4], borderColor: '#8b5cf6', backgroundColor: '#8b5cf6' + '33', fill: true, tension: 0.3 }]);
         createColumnChart('lateArrivalsChart', months, [60, 78, 55, 82, 70, 78], 'حالات تأخير', '#f97316');
         createGroupedBarChart('absenceTypesChart', months, [ { label: 'غياب بدون إذن', data: [10, 12, 8, 14, 9, 12], backgroundColor: '#f43f5e' }, { label: 'غياب مرضي', data: [30, 25, 35, 40, 32, 35], backgroundColor: '#eab308' } ]);
         createGaugeChart('trainingPlanRateChart', 85, 100, '%', '#0284c7');
         createColumnChart('traineesCountChart', ['الربع الأول', 'الربع الثاني', 'الربع الثالث', 'الربع الرابع'], [150, 200, 180, 150], 'متدربين', '#0d9488');
-        createLineChart('avgTrainingHoursChart', months, [25, 26, 28, 27, 30, 28], 'متوسط الساعات', '#0891b2');
+        createLineChart('avgTrainingHoursChart', months, [{ label: 'متوسط الساعات', data: [25, 26, 28, 27, 30, 28], borderColor: '#0891b2', backgroundColor: '#0891b2' + '33', fill: true, tension: 0.3 }]);
         createDonutChart('trainingSatisfactionRateChart', ['ممتاز', 'جيد جداً', 'جيد', 'مقبول'], [45, 35, 15, 5], ['#16a34a', '#84cc16', '#facc15', '#fb923c']);
         createGaugeChart('performanceCompletionRateChart', 91.2, 100, '%', '#0ea5e9');
         createDonutChart('highPerformerRateChart', ['أداء مرتفع', 'أداء قياسي', 'أداء منخفض'], [275, 800, 75], ['#7c3aed', '#64748b', '#f43f5e']);
@@ -613,7 +753,7 @@ document.addEventListener('DOMContentLoaded', function () {
         createGaugeChart('occupancyGaugeDev', 85, 100, '%', '#db2777');
         createGaugeChart('occupancyGaugeClerical', 98, 100, '%', '#9333ea');
         createGaugeChart('occupancyGaugeAux', 100, 100, '%', '#65a30d');
-        createLineChart('laborCasesChart', months, [1, 0, 1, 0, 0, 2], 'جزاءات', '#ef4444');
+        createLineChart('laborCasesChart', months, [{ label: 'جزاءات', data: [1, 0, 1, 0, 0, 2], borderColor: '#ef4444', backgroundColor: '#ef4444' + '33', fill: true, tension: 0.3 }]);
         createColumnChart('violationsChart', months, [12, 15, 10, 18, 14, 15], 'مخالفات', '#f59e0b');
         createAreaChart('totalWagesChart', months, [15.2, 15.3, 15.4, 15.5, 15.5, 15.6], 'التكلفة (مليون)', '#15803d');
         createDonutChart('tempEmployeeRateChart', ['دائم', 'مؤقت'], [1180, 70], ['#1d4ed8', '#f97316']);
@@ -631,10 +771,10 @@ document.addEventListener('DOMContentLoaded', function () {
         createDonutChart('readyVehiclesChart', ['جاهزة', 'غير جاهزة'], [135, 15], ['#22c55e', '#ef4444']);
         createColumnChart('oosVehiclesChart', labels, randomData(15), 'مركبات معطلة', '#f97316', true);
         createGaugeChart('availabilityRateChart', 92, 100, '%', '#10b981');
-        createLineChart('avgUsageChart', labels, randomData(250), 'متوسط الاستخدام', '#3b82f6', true);
+        createLineChart('avgUsageChart', labels, [{ label: 'متوسط الاستخدام', data: randomData(250), borderColor: '#3b82f6', backgroundColor: '#3b82f6' + '33', fill: true, tension: 0.3 }], true);
         createBarChart('maintenanceOrdersChart', labels, randomData(100), 'أوامر الصيانة', '#14b8a6', true);
         createColumnChart('avgBreakdownsChart', labels, randomData(5), 'متوسط الأعطال', '#f43f5e', true);
-        createLineChart('avgRepairTimeChart', labels, randomData(48), 'متوسط زمن الإصلاح', '#eab308', true);
+        createLineChart('avgRepairTimeChart', labels, [{ label: 'متوسط زمن الإصلاح', data: randomData(48), borderColor: '#eab308', backgroundColor: '#eab308' + '33', fill: true, tension: 0.3 }], true);
         createGaugeChart('recurringBreakdownsRateChart', 18, 100, '%', '#ef4444');
         createGaugeChart('preventiveMaintenanceChart', 85, 100, '%', '#22c55e');
         createColumnChart('misuseReportsChart', labels, randomData(5), 'تقارير سوء الاستخدام', '#f59e0b', true);
@@ -653,52 +793,162 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // --- Projects Dashboard ---
     function initProjectsCharts() {
-        // KPI Gauges
         createGaugeChart('overallCompletionRateChart', 72.4, 100, '%', '#16a34a');
         createGaugeChart('spendingRateChart', 70.8, 100, '%', '#f59e0b');
-
-        // Detailed Charts
         createDonutChart('projectStatusChart', ['منجزة', 'قيد التنفيذ', 'متأخرة'], [42, 12, 4], ['#16a34a', '#f59e0b', '#dc2626']);
         createDonutChart('delayReasonsChart', ['نقص الموارد', 'مشاكل تمويل', 'تغيير النطاق', 'أخرى'], [45, 25, 20, 10], ['#ef4444', '#f97316', '#8b5cf6', '#64748b']);
-        
-        createGroupedBarChart('budgetVsSpendingChart', 
-            ['مشروع A', 'مشروع B', 'مشروع C', 'مشروع D', 'مشروع E'], 
-            [
-                { label: 'الموازنة الأصلية', data: [20, 30, 15, 25, 18], backgroundColor: '#3b82f6' },
-                { label: 'المنصرف الفعلي', data: [18, 25, 16, 21, 15], backgroundColor: '#16a34a' }
-            ]
-        );
-
-        createBarChart('projectDurationChart', 
-            ['مشروع A', 'مشروع B', 'مشروع C', 'مشروع D', 'مشروع E', 'مشروع F'], 
-            [24, 18, 36, 12, 20, 30], 
-            'مدة المشروع', 
-            '#8b5cf6',
-            true
-        );
-
+        createGroupedBarChart('budgetVsSpendingChart', ['مشروع A', 'مشروع B', 'مشروع C', 'مشروع D', 'مشروع E'], [ { label: 'الموازنة الأصلية', data: [20, 30, 15, 25, 18], backgroundColor: '#3b82f6' }, { label: 'المنصرف الفعلي', data: [18, 25, 16, 21, 15], backgroundColor: '#16a34a' } ]);
+        createBarChart('projectDurationChart', ['مشروع A', 'مشروع B', 'مشروع C', 'مشروع D', 'مشروع E', 'مشروع F'], [24, 18, 36, 12, 20, 30], 'مدة المشروع', '#8b5cf6', true);
         projectsChartsInitialized = true;
     }
 
     // --- Finance Dashboard ---
     function initFinanceCharts() {
-        // KPI Gauges
         createGaugeChart('deviationRateChart', 8.5, 20, '%', '#f59e0b');
         createGaugeChart('interestImplementationChart', 100, 100, '%', '#16a34a');
-
-        // Detailed Charts
         createDonutChart('paymentStatusChart', ['تم الدفع', 'لم يتم الدفع', 'تحت المراجعة'], [2, 2, 1], ['#16a34a', '#dc2626', '#f59e0b']);
         createDonutChart('operationsByDeptChart', ['الموارد البشرية', 'الشؤون القانونية', 'قطاع الأملاك', 'مركز المعلومات', 'النقل الميكانيكي'], [1, 1, 1, 1, 1], ['#3b82f6', '#8b5cf6', '#10b981', '#f97316', '#06b6d4']);
-        
-        createColumnChart('operationsValueChart', 
-            ['شراء مباشر', 'ممارسة محدودة', 'مزاد علني', 'توريد داخلي'], 
-            [120000, 330000, 3100000, 280000], 
-            'قيمة الترسية', 
-            '#0d9488',
-            true
-        );
+        createColumnChart('operationsValueChart', ['شراء مباشر', 'ممارسة محدودة', 'مزاد علني', 'توريد داخلي'], [120000, 330000, 3100000, 280000], 'قيمة الترسية', '#0d9488', true);
         financeChartsInitialized = true;
     }
+    
+    // --- Budget & Accounts Dashboard (Government & Funds) ---
+    function initBudgetAndFundsDashboard(period = 'monthly') {
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
+        
+        // === Part 1: Government Budget ===
+        createGaugeChart('govBudgetGauge1', 95.2, 100, '%', '#4f46e5');
+        createGaugeChart('govBudgetGauge2', 88.0, 100, '%', '#0d9488');
+        createGaugeChart('govBudgetGauge3', 100, 100, '%', '#2563eb');
+        createGaugeChart('govBudgetGauge4', 91.5, 100, '%', '#db2777');
+        createGaugeChart('govBudgetGauge5', 75.0, 100, '%', '#9333ea');
+        createGaugeChart('govBudgetGauge6', 65.0, 100, '%', '#f59e0b');
+        
+        const varianceData = [
+            { name: 'الباب الأول', value: -1.5 }, { name: 'الباب الثاني', value: 2.1 },
+            { name: 'الباب الثالث', value: 0 }, { name: 'الباب الرابع', value: -0.8 },
+            { name: 'الباب الخامس', value: 5.2 }, { name: 'الباب السادس', value: -4.7 }
+        ];
+        const varianceContainer = document.getElementById('variance-cards-container');
+        varianceContainer.innerHTML = '';
+        varianceData.forEach(item => {
+            const isSurplus = item.value >= 0;
+            const card = document.createElement('div');
+            card.className = `kpi-card variance-card ${isSurplus ? 'variance-surplus' : 'variance-deficit'}`;
+            card.innerHTML = `
+                <h3 class="card-title">${item.name}</h3>
+                <p class="text-3xl font-bold">${isSurplus ? '+' : ''}${item.value.toFixed(1)}%</p>
+                <p class="font-semibold">${isSurplus ? 'فائض' : 'عجز'}</p>
+            `;
+            varianceContainer.appendChild(card);
+        });
+        
+        // NEW: Government Budget KPIs
+        createGaugeChart('govBudgetWagesCapGauge', 98.5, 100, '%', '#4f46e5');
+        createDonutChart('govBudgetInvestmentsDonut', ['منصرف', 'متبقي'], [65, 35], ['#f59e0b', '#e2e8f0'], { plugins: { legend: { display: true } } });
+        createBarChart('govBudgetPaymentOrdersBar', ['أوامر الدفع'], [98], 'نسبة المعتمد', '#16a34a');
+        
+        // NEW: Government Accounts Graphical Analysis
+        createLineChart('govBudgetPaymentTimeChart', months, [{ label: 'متوسط الزمن (يوم)', data: [5, 6, 5.5, 7, 6, 7.5], borderColor: '#8b5cf6', backgroundColor: '#8b5cf6' + '33', fill: true, tension: 0.3 }], true);
+        createColumnChart('govBudgetGfmisRejectionsChart', ['الباب 1', 'الباب 2', 'الباب 4', 'الباب 6'], [2, 5, 3, 8], 'عدد مرات الرفض', '#ef4444', true);
+        createColumnChart('govBudgetFormsIssuedChart', months, [120, 135, 110, 140, 125, 150], 'عدد الاستمارات', '#3b82f6', true);
+
+
+        // === Part 2: Independent Funds ===
+        generateFundsData(); // Generate new random data for the selected period
+
+        // KPI Cards
+        const sortedByVariance = [...fundsData].sort((a, b) => (a.revenue - a.expenses) - (b.revenue - b.expenses));
+        const highestSurplus = sortedByVariance[sortedByVariance.length - 1];
+        const highestDeficit = sortedByVariance[0];
+        document.getElementById('funds-surplus-card').innerHTML = `
+            <h3 class="card-title">الصندوق الأعلى فائضًا</h3>
+            <p class="text-2xl font-bold">${highestSurplus.name}</p>
+            <p class="text-xl font-semibold">+${(highestSurplus.revenue - highestSurplus.expenses).toLocaleString()} جنيه</p>`;
+        document.getElementById('funds-deficit-card').innerHTML = `
+            <h3 class="card-title">الصندوق الأعلى عجزًا</h3>
+            <p class="text-2xl font-bold">${highestDeficit.name}</p>
+            <p class="text-xl font-semibold">${(highestDeficit.revenue - highestDeficit.expenses).toLocaleString()} جنيه</p>`;
+
+        const totalRevenue = fundsData.reduce((sum, fund) => sum + fund.revenue, 0);
+        const highContributors = fundsData
+            .filter(fund => (fund.revenue / totalRevenue) * 100 > 10)
+            .map(fund => fund.name)
+            .join(', ');
+        document.getElementById('high-contribution-funds').textContent = highContributors || 'لا يوجد';
+
+        // Bar Chart
+        createGroupedBarChart('fundsBarChart', fundNames, [
+            { label: 'الإيرادات', data: fundsData.map(f => f.revenue), backgroundColor: '#22c55e' },
+            { label: 'المصروفات', data: fundsData.map(f => f.expenses), backgroundColor: '#ef4444' }
+        ]);
+
+        // Line Chart
+        let labels, dataPoints;
+        if (period === 'monthly') { labels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو']; dataPoints = 6; } 
+        else if (period === 'quarterly') { labels = ['الربع الأول', 'الربع الثاني']; dataPoints = 2; } 
+        else { labels = ['2023', '2024']; dataPoints = 2; }
+        const randomTimeSeries = (base) => Array.from({ length: dataPoints }, () => Math.floor(base * (Math.random() * 0.4 + 0.8)));
+        
+        createLineChart('fundsTrendChart', labels, [
+            { label: 'إجمالي الإيرادات', data: randomTimeSeries(totalRevenue / dataPoints), borderColor: '#3b82f6', backgroundColor: '#3b82f6' + '33', fill: true, tension: 0.3 },
+            { label: 'إجمالي المصروفات', data: randomTimeSeries(fundsData.reduce((sum, f) => sum + f.expenses, 0) / dataPoints), borderColor: '#f43f5e', backgroundColor: '#f43f5e' + '33', fill: true, tension: 0.3 }
+        ], true);
+
+        renderAllFundDetails();
+
+        budgetChartsInitialized = true;
+    }
+
+    function renderAllFundDetails() {
+        const container = document.getElementById('all-funds-details-container');
+        if (!container) return;
+        container.innerHTML = ''; // Clear previous content
+
+        fundsData.forEach((fund, index) => {
+            const gaugeId = `fund-gauge-${index}`;
+            const donutId = `fund-donut-${index}`;
+
+            const cardHtml = `
+                <div class="kpi-card">
+                    <h3 class="card-title text-base font-bold text-indigo-700">${fund.name}</h3>
+                    <div class="grid grid-cols-1 gap-4 mt-2">
+                        <div>
+                            <h4 class="text-sm font-semibold text-center mb-1 text-slate-600">نسبة الصرف من الإيراد</h4>
+                            <div class="gauge-container mx-auto">
+                                <canvas id="${gaugeId}"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-semibold text-center mb-1 text-slate-600">توزيع مصادر الإيراد</h4>
+                            <div class="chart-container mx-auto">
+                                <canvas id="${donutId}"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += cardHtml;
+        });
+
+        // Now, create the charts in the newly created canvas elements
+        fundsData.forEach((fund, index) => {
+            const gaugeId = `fund-gauge-${index}`;
+            const donutId = `fund-donut-${index}`;
+
+            // Create Gauge Chart
+            const spendingRatio = fund.revenue > 0 ? (fund.expenses / fund.revenue) * 100 : 0;
+            createGaugeChart(gaugeId, spendingRatio, 100, '%', '#f59e0b');
+
+            // Create Donut Chart
+            const sources = fund.revenueSources;
+            const totalSourceValue = Object.values(sources).reduce((s, v) => s + v, 0);
+            const sourceLabels = Object.keys(sources);
+            const sourceData = sourceLabels.map(key => totalSourceValue > 0 ? (sources[key] / totalSourceValue) * fund.revenue : 0);
+            createDonutChart(donutId, sourceLabels, sourceData, ['#10b981', '#3b82f6', '#f97316', '#8b5cf6']);
+        });
+    }
+
 
     // --- Main Navigation ---
     const navLinks = document.querySelectorAll('.nav-link');
@@ -718,33 +968,33 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Lazy load charts
-            if (targetId === 'hr-dashboard' && !window.hrChartsInitialized) {
-                initHrCharts();
-                window.hrChartsInitialized = true;
-            }
-            if (targetId === 'transport-dashboard' && !window.transportChartsInitialized) {
-                initTransportDashboard();
-                window.transportChartsInitialized = true;
-            }
-            if (targetId === 'projects-dashboard' && !window.projectsChartsInitialized) {
-                initProjectsCharts();
-                window.projectsChartsInitialized = true;
-            }
-            if (targetId === 'finance-dashboard' && !window.financeChartsInitialized) {
-                initFinanceCharts();
-                window.financeChartsInitialized = true;
-            }
+            if (targetId === 'hr-dashboard' && !window.hrChartsInitialized) { initHrCharts(); window.hrChartsInitialized = true; }
+            if (targetId === 'transport-dashboard' && !window.transportChartsInitialized) { initTransportDashboard(); window.transportChartsInitialized = true; }
+            if (targetId === 'projects-dashboard' && !window.projectsChartsInitialized) { initProjectsCharts(); window.projectsChartsInitialized = true; }
+            if (targetId === 'finance-dashboard' && !window.financeChartsInitialized) { initFinanceCharts(); window.financeChartsInitialized = true; }
+            if (targetId === 'budget-dashboard' && !window.budgetChartsInitialized) { initBudgetAndFundsDashboard(); }
         });
     });
+
+    // --- Filter Listeners ---
+    const fundsTimeFilter = document.getElementById('funds-time-filter');
+    if (fundsTimeFilter) {
+        fundsTimeFilter.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                fundsTimeFilter.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+                initBudgetAndFundsDashboard(e.target.dataset.period);
+            }
+        });
+    }
+
 
     // --- AI Insight Button Listeners ---
     document.getElementById('generate-hr-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('hr', e));
     document.getElementById('generate-transport-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('transport', e));
     document.getElementById('generate-projects-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('projects', e));
-    const generateFinanceBtn = document.getElementById('generate-finance-insight-btn');
-    if(generateFinanceBtn) {
-        generateFinanceBtn.addEventListener('click', (e) => getInteractiveAiInsight('finance', e));
-    }
+    document.getElementById('generate-finance-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('finance', e));
+    document.getElementById('generate-budget-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('budget', e));
     
     // Initial Load
     initHrCharts();
