@@ -11,9 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- MODIFICATION: Added AI Insights section to both HR and Transport dashboards. -->
-    <!-- Each section has a button that triggers a call to the Gemini API to generate contextual analysis. -->
-    <!-- JS MODIFICATION: Added `generateAiInsight` function to handle API calls and display results. Added event listeners for the new buttons. -->
+    <!-- MODIFICATION: AI Insights are now interactive and internal. -->
+    <!-- The external API call has been removed and replaced with a local, rule-based JavaScript function. -->
+    <!-- JS MODIFICATION: Replaced `generateAiInsight` with `getInteractiveAiInsight` which simulates analysis based on hardcoded chart data to provide instant, contextual feedback without external dependencies. -->
 
     <style>
         body {
@@ -83,7 +83,7 @@
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
         .ai-insight-text {
-            min-height: 100px;
+            min-height: 120px;
         }
         .generate-ai-btn {
             background-color: rgba(255, 255, 255, 0.2);
@@ -329,69 +329,65 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeModalBtn = document.getElementById('close-modal-btn');
     let transportChartsInitialized = false;
 
-    // --- AI Insight Generation ---
-    async function generateAiInsight(dashboardType) {
-        let prompt = '';
-        let textElement;
+    // --- Interactive AI Insight Generation ---
+    function getInteractiveAiInsight(dashboardType) {
         const buttonElement = event.target;
-        
+        let textElement, insights = [], recommendations = [];
+
         buttonElement.disabled = true;
 
         if (dashboardType === 'hr') {
             textElement = document.getElementById('hr-ai-insight-text');
-            prompt = `بصفتك محلل بيانات خبير في الموارد البشرية، قم بتحليل بيانات لوحة المعلومات التالية:
-- نسبة الدوران الوظيفي: 8.2% (الهدف أقل من 10%)
-- عدد الاستقالات: يظهر اتجاهًا تصاعديًا في آخر 6 أشهر.
-- نسبة الموظفين ذوي الأداء المرتفع: 22% (الهدف 25%).
-- نسبة إشغال الوظائف التخصصية: 88%.
-- نسبة الرضا عن التدريب: 92%.
-بناءً على هذه البيانات، قدم 3 رؤى رئيسية واقترح 3 إجراءات قابلة للتنفيذ لتحسين الأداء وتقليل المخاطر. اجعل الرد على شكل نقاط واضحة وموجزة باللغة العربية.`;
+            // Simulate reading data from charts for analysis
+            const turnoverRate = 8.2;
+            const highPerformerRate = 22;
+            const specializedOccupancy = 88;
+
+            if (turnoverRate > 7) {
+                insights.push("يوجد مؤشر خطر في ارتفاع معدل الدوران الوظيفي، مما قد يؤدي إلى فقدان المواهب.");
+                recommendations.push("توصية استباقية: تطبيق برامج للاحتفاظ بالموظفين ذوي الأداء المرتفع وتحليل أسباب التسرب.");
+            }
+            if (specializedOccupancy < 90) {
+                insights.push(`النقص في إشغال الوظائف التخصصية (${specializedOccupancy}%) قد يؤدي إلى تأخير في المشاريع الحيوية.`);
+                recommendations.push("توصية استباقية: إطلاق حملة توظيف مركزة لهذه الفئة ووضع خطة تعاقب وظيفي.");
+            }
+             if (highPerformerRate < 25) {
+                insights.push("انخفاض نسبة الموظفين ذوي الأداء العالي قد يؤثر على الابتكار والقدرة التنافسية.");
+                recommendations.push("توصية استباقية: مراجعة نظام تقييم الأداء وربطه ببرامج تطوير وتدريب موجهة.");
+            }
+
         } else if (dashboardType === 'transport') {
             textElement = document.getElementById('transport-ai-insight-text');
-            prompt = `بصفتك مدير أسطول خبير، قم بتحليل بيانات لوحة المعلومات التالية:
-- نسبة التوافر التشغيلي: 92%.
-- متوسط زمن الإصلاح: يظهر اتجاهًا تصاعديًا.
-- نسبة الأعطال المتكررة: 18% (مرتفعة).
-- عدد المركبات خارج الصيانة الدورية: 7 مركبات.
-- درجة الخطر التشغيلي: 6.8 (متوسط).
-بناءً على هذه البيانات، قدم 3 رؤى رئيسية واقترح 3 إجراءات قابلة للتنفيذ لزيادة الكفاءة التشغيلية وتقليل المخاطر والتكاليف. اجعل الرد على شكل نقاط واضحة وموجزة باللغة العربية.`;
+            // Simulate reading data
+            const recurringBreakdowns = 18;
+            const overdueMaintenance = 7;
+            
+            if (recurringBreakdowns > 15) {
+                insights.push(`النسبة المرتفعة للأعطال المتكررة (${recurringBreakdowns}%) تنبئ باحتمالية انخفاض أداء موردين محددين لقطع الغيار.`);
+                recommendations.push("توصية استباقية: تحليل الأعطال حسب نوع المركبة والمورد، والبدء في تقييم موردين بدلاء.");
+            }
+            if (overdueMaintenance > 5) {
+                insights.push(`وجود ${overdueMaintenance} مركبات خارج الصيانة الدورية يزيد من خطر الأعطال المفاجئة وتوقف العمليات.`);
+                recommendations.push("توصية استباقية: إعادة جدولة فورية لصيانة هذه المركبات وتطبيق نظام تنبيه آلي للصيانة القادمة.");
+            }
         }
 
         if (!textElement) return;
         textElement.innerHTML = '<div class="flex items-center justify-center"><svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جارٍ التحليل...</span></div>';
 
-        try {
-            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = { contents: chatHistory };
-            const apiKey = ""; // Provided by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-            
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.candidates && result.candidates.length > 0 &&
-                result.candidates[0].content && result.candidates[0].content.parts &&
-                result.candidates[0].content.parts.length > 0) {
-                const generatedText = result.candidates[0].content.parts[0].text;
-                textElement.innerHTML = generatedText.replace(/\n/g, '<br>');
+        setTimeout(() => {
+            if (insights.length === 0) {
+                 textElement.innerHTML = 'لم يتم رصد أي مخاطر أو اتجاهات مقلقة حاليًا. الأداء ضمن الحدود الطبيعية.';
             } else {
-                textElement.textContent = 'عذرًا، لم نتمكن من توليد التحليل. يرجى المحاولة مرة أخرى.';
+                let finalHtml = '<strong>تحليل استباقي:</strong><ul class="list-disc pr-5 mb-3">';
+                insights.forEach(insight => { finalHtml += `<li>${insight}</li>`; });
+                finalHtml += '</ul><strong>قرارات مقترحة:</strong><ul class="list-disc pr-5">';
+                recommendations.forEach(rec => { finalHtml += `<li>${rec}</li>`; });
+                finalHtml += '</ul>';
+                textElement.innerHTML = finalHtml;
             }
-        } catch (error) {
-            console.error("AI Insight Error:", error);
-            textElement.textContent = 'حدث خطأ أثناء الاتصال بخدمة الذكاء الاصطناعي. يرجى التحقق من اتصالك والمحاولة لاحقًا.';
-        } finally {
-             buttonElement.disabled = false;
-        }
+            buttonElement.disabled = false;
+        }, 1500);
     }
 
 
@@ -573,8 +569,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     
     // --- AI Insight Button Listeners ---
-    document.getElementById('generate-hr-insight-btn').addEventListener('click', () => generateAiInsight('hr'));
-    document.getElementById('generate-transport-insight-btn').addEventListener('click', () => generateAiInsight('transport'));
+    document.getElementById('generate-hr-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('hr', e));
+    document.getElementById('generate-transport-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('transport', e));
+
 
     // Initial Load
     initHrCharts();
