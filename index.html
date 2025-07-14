@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المعلومات المتكاملة - Dynamics 365</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- MODIFICATION: Added a new "Job Occupancy Rate by Qualitative Group" section to the HR dashboard. -->
+    <!-- This new section uses a series of Gauge charts to display occupancy rates for different job groups. -->
+    <!-- JS MODIFICATION: Added calls in `initHrCharts` to create the new gauge charts with sample data. -->
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+        }
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 140px;
+            max-height: 150px;
+        }
+        .sidebar-icon {
+            width: 24px;
+            height: 24px;
+        }
+        .nav-link {
+             transition: background-color 0.2s, color 0.2s;
+        }
+        .active-nav {
+            background-color: #1e3a8a;
+            color: white;
+            border-right: 4px solid #facc15;
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .card-title {
+             font-weight: 700;
+             font-size: 0.95rem;
+             color: #334155;
+             margin-bottom: 0.75rem;
+             text-align: center;
+        }
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #3b82f6;
+        }
+        .filter-btn {
+            background-color: #e5e7eb;
+            color: #374151;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .risk-index-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.5s;
+        }
+        .risk-low { background-color: #16a34a; }
+        .risk-medium { background-color: #f59e0b; }
+        .risk-high { background-color: #dc2626; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6); display: flex;
+            align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: 0.5rem;
+            max-width: 500px; width: 90%; text-align: center;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="app-container" class="flex h-screen">
+        
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col">
+            <div class="flex items-center justify-center p-4 border-b border-slate-700">
+                <h1 class="text-xl font-bold text-white">لوحة المؤشرات</h1>
+            </div>
+            <nav class="flex-1 px-2 py-4 space-y-2">
+                <a href="#" data-target="hr-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700 active-nav">
+                    <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span>إدارة الموارد البشرية</span>
+                </a>
+                <a href="#" data-target="transport-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
+                    <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l-4-4m0 0l4-4m-4 4h18m-7 4l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    <span>إدارة النقل الميكانيكي</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col h-screen overflow-y-auto">
+            <!-- HR Dashboard -->
+            <div id="hr-dashboard" class="dashboard-content">
+                <header class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-10 border-b">
+                    <h2 class="text-2xl font-bold text-slate-800">بيان بمؤشرات قطاع الموارد البشرية</h2>
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                         <button class="p-2 rounded-md bg-green-700 text-white hover:bg-green-800 text-sm font-semibold">تصدير Excel</button>
+                        <button class="p-2 rounded-md bg-red-700 text-white hover:bg-red-800 text-sm font-semibold">تصدير PDF</button>
+                    </div>
+                </header>
+                <div class="p-4 md:p-6">
+                    <!-- General Indicators -->
+                    <h3 class="section-header">مؤشرات عامة</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">إجمالي عدد الموظفين</h3><p class="text-5xl font-bold text-blue-700 text-center self-center">1,250</p></div>
+                        <div class="kpi-card"><h3 class="card-title">معدل التوظيف</h3><div class="gauge-container"><canvas id="hiringRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة الدوران الوظيفي</h3><div class="gauge-container"><canvas id="turnoverRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">عدد الاستقالات (آخر 6 أشهر)</h3><div class="chart-container"><canvas id="resignationsChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة المؤقتين إلى الدائمين</h3><div class="chart-container"><canvas id="tempToPermRatioChart"></canvas></div></div>
+                    </div>
+                    <!-- Attendance -->
+                    <h3 class="section-header">الحضور والانصراف</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">نسبة الحضور العام</h3><div class="gauge-container"><canvas id="attendanceRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">متوسط الغياب الشهري للفرد</h3><div class="chart-container"><canvas id="avgAbsenceChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">حالات التأخير (آخر 6 أشهر)</h3><div class="chart-container"><canvas id="lateArrivalsChart"></canvas></div></div>
+                        <div class="kpi-card lg:col-span-2"><h3 class="card-title">أنواع الغياب (شهري)</h3><div class="chart-container"><canvas id="absenceTypesChart"></canvas></div></div>
+                    </div>
+                    <!-- Training & Development -->
+                    <h3 class="section-header">التدريب والتطوير</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">الدورات التدريبية المنفذة</h3><p class="text-5xl font-bold text-blue-700 text-center self-center">45</p></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة تنفيذ خطة التدريب</h3><div class="gauge-container"><canvas id="trainingPlanRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">عدد المتدربين (ربع سنوي)</h3><div class="chart-container"><canvas id="traineesCountChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">متوسط ساعات التدريب لكل موظف</h3><div class="chart-container"><canvas id="avgTrainingHoursChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة الرضا عن التدريب</h3><div class="chart-container"><canvas id="trainingSatisfactionRateChart"></canvas></div></div>
+                    </div>
+                    <!-- Performance Evaluation -->
+                    <h3 class="section-header">تقييم الأداء</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">التقييمات الدورية المنفذة</h3><p class="text-5xl font-bold text-blue-700 text-center self-center">1,150</p></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة تقييمات الأداء المكتملة</h3><div class="gauge-container"><canvas id="performanceCompletionRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة الموظفين ذوي الأداء المرتفع</h3><div class="chart-container"><canvas id="highPerformerRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">الموظفون بدون تقييم (حسب الإدارة)</h3><div class="chart-container"><canvas id="unassessedEmployeesChart"></canvas></div></div>
+                    </div>
+                    <!-- Job Occupancy Rate -->
+                    <h3 class="section-header">نسبة إشغال الوظائف حسب المجموعة النوعية</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">الإدارة العليا</h3><div class="gauge-container"><canvas id="occupancyGaugeSenior"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">التخصصية</h3><div class="gauge-container"><canvas id="occupancyGaugeSpecialized"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">الفنية</h3><div class="gauge-container"><canvas id="occupancyGaugeTechnical"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">التنمية البشرية</h3><div class="gauge-container"><canvas id="occupancyGaugeDev"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">الكتابية</h3><div class="gauge-container"><canvas id="occupancyGaugeClerical"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">الخدمات المعاونة</h3><div class="gauge-container"><canvas id="occupancyGaugeAux"></canvas></div></div>
+                    </div>
+                    <!-- Costs & Control -->
+                    <h3 class="section-header">التكاليف والرقابة</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">الجزائات</h3><div class="chart-container"><canvas id="laborCasesChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">المخالفات المسجلة</h3><div class="chart-container"><canvas id="violationsChart"></canvas></div></div>
+                        <div class="kpi-card lg:col-span-2"><h3 class="card-title">إجمالي تكلفة الأجور</h3><div class="chart-container"><canvas id="totalWagesChart"></canvas></div></div>
+                         <div class="kpi-card"><h3 class="card-title">نسبة الموظفين المؤقتين</h3><div class="chart-container"><canvas id="tempEmployeeRateChart"></canvas></div></div>
+                    </div>
+                    <!-- Service Termination -->
+                    <h3 class="section-header">إنهاء الخدمة</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="kpi-card"><h3 class="card-title">معدل التقاعد السنوي</h3><div class="gauge-container"><canvas id="retirementRateChart"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transport Dashboard -->
+            <div id="transport-dashboard" class="dashboard-content hidden">
+                 <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">لوحة معلومات إدارة النقل الميكانيكي</h2>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div id="transport-time-filter" class="flex items-center gap-2">
+                                <button data-period="monthly" class="filter-btn active">شهري</button>
+                                <button data-period="quarterly" class="filter-btn">ربع سنوي</button>
+                                <button data-period="yearly" class="filter-btn">سنوي</button>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="text" placeholder="كود العملية (مثال: 2025/001)" class="w-48 p-2 border rounded-md focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div class="p-4 md:p-6">
+                    <!-- Operational Section -->
+                    <h3 class="section-header">المؤشرات التشغيلية</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">إجمالي عدد المركبات</h3><p class="text-6xl font-bold text-blue-600">150</p></div>
+                        <div class="kpi-card"><h3 class="card-title">المركبات الجاهزة للتشغيل</h3><div class="chart-container"><canvas id="readyVehiclesChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">المركبات المعطلة</h3><div class="chart-container"><canvas id="oosVehiclesChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة التوافر التشغيلي</h3><div class="gauge-container"><canvas id="availabilityRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">متوسط استخدام السيارة (كم/يوم)</h3><div class="chart-container"><canvas id="avgUsageChart"></canvas></div></div>
+                    </div>
+                    <!-- Technical Section -->
+                    <h3 class="section-header">المؤشرات الفنية</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="kpi-card"><h3 class="card-title">أوامر الصيانة المنفذة</h3><div class="chart-container"><canvas id="maintenanceOrdersChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">متوسط أعطال المركبة</h3><div class="chart-container"><canvas id="avgBreakdownsChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">متوسط زمن الإصلاح (ساعة)</h3><div class="chart-container"><canvas id="avgRepairTimeChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة الأعطال المتكررة</h3><div class="gauge-container"><canvas id="recurringBreakdownsRateChart"></canvas></div></div>
+                    </div>
+                    <!-- Control & Risk Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                        <div class="lg:col-span-2">
+                            <h3 class="section-header">المؤشرات الرقابية</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="kpi-card items-center justify-center"><h3 class="card-title">مركبات خارج الصيانة الدورية</h3><p class="text-6xl font-bold text-red-600">7</p></div>
+                                <div class="kpi-card"><h3 class="card-title">الالتزام بالصيانة الوقائية</h3><div class="gauge-container"><canvas id="preventiveMaintenanceChart"></canvas></div></div>
+                                <div class="kpi-card"><h3 class="card-title">عدد تقارير سوء الاستخدام</h3><div class="chart-container"><canvas id="misuseReportsChart"></canvas></div></div>
+                                <div class="kpi-card"><h3 class="card-title">عدد الشكاوى ضد السائقين</h3><div class="chart-container"><canvas id="driverComplaintsChart"></canvas></div></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="section-header">مؤشرات المخاطر</h3>
+                            <div class="grid grid-cols-1 gap-6">
+                                 <div id="riskIndexCard" class="kpi-card risk-index-card risk-medium">
+                                    <h3 class="text-2xl font-bold mb-2">درجة الخطر التشغيلي</h3>
+                                    <p id="riskIndexValue" class="text-7xl font-bold">6.8</p>
+                                    <p id="riskIndexLabel" class="text-xl font-semibold">متوسط</p>
+                                </div>
+                                <div class="kpi-card"><h3 class="card-title">عدد الحوادث أو الإصابات</h3><div class="chart-container"><canvas id="accidentsChart"></canvas></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Drill-down Modal -->
+    <div id="drilldown-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-4">تفاصيل المؤشر</h3>
+            <p id="modal-text" class="text-lg mb-6">جارٍ عرض البيانات التفصيلية...</p>
+            <button id="close-modal-btn" class="filter-btn active">إغلاق</button>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    Chart.register(ChartDataLabels);
+    Chart.defaults.font.family = 'Tajawal';
+    Chart.defaults.plugins.legend.position = 'bottom';
+    Chart.defaults.plugins.datalabels.display = false;
+
+    const charts = {};
+    const modal = document.getElementById('drilldown-modal');
+    const modalText = document.getElementById('modal-text');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    let transportChartsInitialized = false;
+
+    // --- Modal Logic ---
+    function showModal(text) {
+        modalText.textContent = `محاكاة عرض تفصيلي لـ: ${text}. في التطبيق الفعلي، سيتم عرض جدول بيانات أو صفحة مركبة.`;
+        modal.classList.add('visible');
+    }
+    closeModalBtn.addEventListener('click', () => modal.classList.remove('visible'));
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('visible');
+    });
+
+    const getDrilldownOptions = (chartTitle) => ({
+        onClick: (evt, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const label = evt.chart.data.labels[index];
+                showModal(`${chartTitle} - ${label}`);
+            }
+        }
+    });
+
+    // --- Chart Creation Functions ---
+    const createGaugeChart = (canvasId, value, target, unit = '%', color = '#0ea5e9') => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        charts[canvasId] = new Chart(ctx, {
+            type: 'doughnut', data: { datasets: [{ data: [value, target - value], backgroundColor: [color, '#e2e8f0'], borderWidth: 0, circumference: 180, rotation: 270 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { display: true, formatter: (val, context) => context.dataIndex === 0 ? val.toFixed(1) + unit : '', color: '#1e293b', font: { size: 24, weight: 'bold' } } } }
+        });
+    };
+    const createColumnChart = (canvasId, labels, data, chartLabel, color, drilldown = false) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } };
+        if (drilldown) {
+            options.onClick = getDrilldownOptions(chartLabel).onClick;
+        }
+        charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: chartLabel, data: data, backgroundColor: color, borderRadius: 4 }] }, options });
+    };
+    const createLineChart = (canvasId, labels, data, chartLabel, color, drilldown = false) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        const options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } };
+        if (drilldown) {
+            options.onClick = getDrilldownOptions(chartLabel).onClick;
+        }
+        charts[canvasId] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: chartLabel, data: data, borderColor: color, backgroundColor: color + '33', fill: true, tension: 0.3 }] }, options });
+    };
+    const createDonutChart = (canvasId, labels, data, colors) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        charts[canvasId] = new Chart(ctx, {
+            type: 'doughnut', data: { labels: labels, datasets: [{ data: data, backgroundColor: colors }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right' }, datalabels: { display: true, color: 'white', font:{weight:'bold'}, formatter: (value, ctx) => { let sum = 0; let dataArr = ctx.chart.data.datasets[0].data; dataArr.map(d => { sum += d; }); let percentage = (value*100 / sum).toFixed(1)+"%"; return percentage;} } } }
+        });
+    };
+    const createAreaChart = (canvasId, labels, data, chartLabel, color) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        charts[canvasId] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: chartLabel, data: data, borderColor: color, backgroundColor: color + '80', fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    };
+    const createGroupedBarChart = (canvasId, labels, datasets) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+    };
+    const createBarChart = (canvasId, labels, data, chartLabel, color, drilldown = false) => {
+        if (charts[canvasId]) charts[canvasId].destroy();
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+        const options = { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } };
+        if (drilldown) {
+            options.onClick = getDrilldownOptions(chartLabel).onClick;
+        }
+        charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: chartLabel, data: data, backgroundColor: color }] }, options });
+    };
+
+    // --- HR Dashboard ---
+    function initHrCharts() {
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
+        createGaugeChart('hiringRateChart', 4.5, 10, '%', '#10b981');
+        createGaugeChart('turnoverRateChart', 8.2, 10, '%', '#ef4444');
+        createColumnChart('resignationsChart', months, [5, 3, 6, 4, 7, 6], 'استقالات', '#dc2626');
+        createDonutChart('tempToPermRatioChart', ['دائم', 'مؤقت'], [1100, 150], ['#0284c7', '#f59e0b']);
+        createGaugeChart('attendanceRateChart', 97.5, 100, '%', '#22c55e');
+        createLineChart('avgAbsenceChart', months, [0.3, 0.4, 0.2, 0.5, 0.4, 0.4], 'متوسط الغياب', '#8b5cf6');
+        createColumnChart('lateArrivalsChart', months, [60, 78, 55, 82, 70, 78], 'حالات تأخير', '#f97316');
+        createGroupedBarChart('absenceTypesChart', months, [ { label: 'غياب بدون إذن', data: [10, 12, 8, 14, 9, 12], backgroundColor: '#f43f5e' }, { label: 'غياب مرضي', data: [30, 25, 35, 40, 32, 35], backgroundColor: '#eab308' } ]);
+        createGaugeChart('trainingPlanRateChart', 85, 100, '%', '#0284c7');
+        createColumnChart('traineesCountChart', ['الربع الأول', 'الربع الثاني', 'الربع الثالث', 'الربع الرابع'], [150, 200, 180, 150], 'متدربين', '#0d9488');
+        createLineChart('avgTrainingHoursChart', months, [25, 26, 28, 27, 30, 28], 'متوسط الساعات', '#0891b2');
+        createDonutChart('trainingSatisfactionRateChart', ['ممتاز', 'جيد جداً', 'جيد', 'مقبول'], [45, 35, 15, 5], ['#16a34a', '#84cc16', '#facc15', '#fb923c']);
+        createGaugeChart('performanceCompletionRateChart', 91.2, 100, '%', '#0ea5e9');
+        createDonutChart('highPerformerRateChart', ['أداء مرتفع', 'أداء قياسي', 'أداء منخفض'], [275, 800, 75], ['#7c3aed', '#64748b', '#f43f5e']);
+        createColumnChart('unassessedEmployeesChart', ['التسويق', 'المالية', 'العمليات', 'IT'], [20, 15, 40, 25], 'موظفون', '#f97316');
+        
+        // New Job Occupancy Charts
+        createGaugeChart('occupancyGaugeSenior', 95, 100, '%', '#4f46e5');
+        createGaugeChart('occupancyGaugeSpecialized', 88, 100, '%', '#0d9488');
+        createGaugeChart('occupancyGaugeTechnical', 92, 100, '%', '#2563eb');
+        createGaugeChart('occupancyGaugeDev', 85, 100, '%', '#db2777');
+        createGaugeChart('occupancyGaugeClerical', 98, 100, '%', '#9333ea');
+        createGaugeChart('occupancyGaugeAux', 100, 100, '%', '#65a30d');
+
+        createLineChart('laborCasesChart', months, [1, 0, 1, 0, 0, 2], 'جزاءات', '#ef4444');
+        createColumnChart('violationsChart', months, [12, 15, 10, 18, 14, 15], 'مخالفات', '#f59e0b');
+        createAreaChart('totalWagesChart', months, [15.2, 15.3, 15.4, 15.5, 15.5, 15.6], 'التكلفة (مليون)', '#15803d');
+        createDonutChart('tempEmployeeRateChart', ['دائم', 'مؤقت'], [1180, 70], ['#1d4ed8', '#f97316']);
+        createGaugeChart('retirementRateChart', 2.5, 3.0, '%', '#64748b');
+    }
+
+    // --- Transport Dashboard ---
+    function initTransportDashboard(period = 'monthly') {
+        let labels, dataPoints;
+        if (period === 'monthly') { labels = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو']; dataPoints = 6; } 
+        else if (period === 'quarterly') { labels = ['الربع الأول', 'الربع الثاني', 'الربع الثالث', 'الربع الرابع']; dataPoints = 4; } 
+        else { labels = ['2023', '2024', '2025']; dataPoints = 3; }
+        const randomData = (max) => Array.from({ length: dataPoints }, () => Math.floor(Math.random() * max) + 1);
+
+        createDonutChart('readyVehiclesChart', ['جاهزة', 'غير جاهزة'], [135, 15], ['#22c55e', '#ef4444']);
+        createColumnChart('oosVehiclesChart', labels, randomData(15), 'مركبات معطلة', '#f97316', true);
+        createGaugeChart('availabilityRateChart', 92, 100, '%', '#10b981');
+        createLineChart('avgUsageChart', labels, randomData(250), 'متوسط الاستخدام', '#3b82f6', true);
+        createBarChart('maintenanceOrdersChart', labels, randomData(100), 'أوامر الصيانة', '#14b8a6', true);
+        createColumnChart('avgBreakdownsChart', labels, randomData(5), 'متوسط الأعطال', '#f43f5e', true);
+        createLineChart('avgRepairTimeChart', labels, randomData(48), 'متوسط زمن الإصلاح', '#eab308', true);
+        createGaugeChart('recurringBreakdownsRateChart', 18, 100, '%', '#ef4444');
+        createGaugeChart('preventiveMaintenanceChart', 85, 100, '%', '#22c55e');
+        createColumnChart('misuseReportsChart', labels, randomData(5), 'تقارير سوء الاستخدام', '#f59e0b', true);
+        createColumnChart('driverComplaintsChart', labels, randomData(4), 'شكاوى السائقين', '#a855f7', true);
+        createColumnChart('accidentsChart', labels, randomData(3), 'الحوادث', '#dc2626', true);
+        
+        const riskCard = document.getElementById('riskIndexCard'), riskValue = document.getElementById('riskIndexValue'), riskLabel = document.getElementById('riskIndexLabel');
+        const riskScore = (Math.random() * 10).toFixed(1);
+        riskValue.textContent = riskScore;
+        riskCard.classList.remove('risk-low', 'risk-medium', 'risk-high');
+        if (riskScore < 4) { riskCard.classList.add('risk-low'); riskLabel.textContent = 'منخفض'; } 
+        else if (riskScore < 7) { riskCard.classList.add('risk-medium'); riskLabel.textContent = 'متوسط'; } 
+        else { riskCard.classList.add('risk-high'); riskLabel.textContent = 'مرتفع'; }
+        transportChartsInitialized = true;
+    }
+
+    // --- Main Navigation ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const dashboards = document.querySelectorAll('.dashboard-content');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.dataset.target;
+            
+            navLinks.forEach(l => l.classList.remove('active-nav'));
+            link.classList.add('active-nav');
+            
+            dashboards.forEach(d => d.classList.add('hidden'));
+            document.getElementById(targetId).classList.remove('hidden');
+
+            if (targetId === 'transport-dashboard' && !transportChartsInitialized) {
+                initTransportDashboard();
+            }
+        });
+    });
+
+    // --- Transport Filter Logic ---
+    const timeFilter = document.getElementById('transport-time-filter');
+    timeFilter.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            timeFilter.querySelector('.active').classList.remove('active');
+e.target.classList.add('active');
+            initTransportDashboard(e.target.dataset.period);
+        }
+    });
+
+    // Initial Load
+    initHrCharts();
+});
+</script>
+
+</body>
+</html>
