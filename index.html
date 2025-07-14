@@ -11,9 +11,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- MODIFICATION: AI Insights are now interactive and internal. -->
-    <!-- The external API call has been removed and replaced with a local, rule-based JavaScript function. -->
-    <!-- JS MODIFICATION: Replaced `generateAiInsight` with `getInteractiveAiInsight` which simulates analysis based on hardcoded chart data to provide instant, contextual feedback without external dependencies. -->
+    <!-- MODIFICATION: Added a new graphical analysis section to the "Project Management" dashboard. -->
+    <!-- This includes 4 new charts: Project Status, Budget vs. Spending, Project Duration, and Delay Reasons. -->
+    <!-- Some redundant KPI cards were removed to avoid duplication. -->
+    <!-- JS MODIFICATION: Updated `initProjectsCharts` to create the new charts with sample data. -->
 
     <style>
         body {
@@ -24,6 +25,11 @@
             position: relative;
             width: 100%;
             height: 220px;
+        }
+        .large-chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
         }
         .gauge-container {
             position: relative;
@@ -150,6 +156,10 @@
                 <a href="#" data-target="transport-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
                     <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l-4-4m0 0l4-4m-4 4h18m-7 4l4 4m0 0l-4 4m4-4H3"></path></svg>
                     <span>إدارة النقل الميكانيكي</span>
+                </a>
+                <a href="#" data-target="projects-dashboard" class="nav-link flex items-center p-3 rounded-lg hover:bg-slate-700">
+                     <svg class="sidebar-icon ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>إدارة المشروعات</span>
                 </a>
             </nav>
         </aside>
@@ -304,6 +314,54 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Projects Dashboard -->
+            <div id="projects-dashboard" class="dashboard-content hidden">
+                 <header class="bg-white shadow-md p-4 sticky top-0 z-10">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">لوحة معلومات إدارة المشروعات</h2>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <!-- Filters can be added here if needed -->
+                        </div>
+                    </div>
+                </header>
+                <div class="p-4 md:p-6">
+                    <!-- AI Insights Section -->
+                    <div class="ai-insight-card">
+                        <div class="flex justify-between items-start">
+                            <h3 class="text-xl font-bold mb-2">تحليلات الذكاء الاصطناعي (AI Insights)</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <p id="projects-ai-insight-text" class="ai-insight-text mb-4">اضغط على زر "توليد تحليل" للحصول على رؤى وتوصيات مخصصة بناءً على بيانات المشروعات الحالية.</p>
+                        <button id="generate-projects-insight-btn" class="generate-ai-btn self-start font-semibold py-2 px-4 rounded-lg">توليد تحليل</button>
+                    </div>
+                    
+                    <!-- Project KPIs -->
+                    <h3 class="section-header">المؤشرات الرئيسية للمشروعات</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">إجمالي عدد المشاريع</h3><p class="text-5xl font-bold text-blue-600">58</p></div>
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">إجمالي الموازنة</h3><p class="text-3xl font-bold text-green-700">150M</p></div>
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">إجمالي المنصرف</h3><p class="text-3xl font-bold text-green-600">106.2M</p></div>
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">عدد المستخلصات المصروفة</h3><p class="text-5xl font-bold text-cyan-600">215</p></div>
+                        
+                        <div class="kpi-card"><h3 class="card-title">نسبة الإنجاز الكلية</h3><div class="gauge-container"><canvas id="overallCompletionRateChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">نسبة الصرف</h3><div class="gauge-container"><canvas id="spendingRateChart"></canvas></div></div>
+                        
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">عدد المشاريع بدون صرف</h3><p class="text-5xl font-bold text-indigo-600">6</p></div>
+                        <div class="kpi-card items-center justify-center"><h3 class="card-title">متوسط مدة المشروع (شهر)</h3><p class="text-5xl font-bold text-purple-600">18</p></div>
+                    </div>
+
+                    <!-- New Graphical Analysis Section -->
+                    <h3 class="section-header">تحليلات بيانية للمشروعات</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="kpi-card"><h3 class="card-title">حالة المشاريع</h3><div class="large-chart-container"><canvas id="projectStatusChart"></canvas></div></div>
+                        <div class="kpi-card"><h3 class="card-title">أسباب تأخر المشاريع</h3><div class="large-chart-container"><canvas id="delayReasonsChart"></canvas></div></div>
+                        <div class="kpi-card lg:col-span-2"><h3 class="card-title">الموازنة مقابل المنصرف لأبرز المشاريع (مليون)</h3><div class="large-chart-container"><canvas id="budgetVsSpendingChart"></canvas></div></div>
+                        <div class="kpi-card lg:col-span-2"><h3 class="card-title">مدة تنفيذ المشاريع (بالشهر)</h3><div class="large-chart-container"><canvas id="projectDurationChart"></canvas></div></div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
     
@@ -328,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalText = document.getElementById('modal-text');
     const closeModalBtn = document.getElementById('close-modal-btn');
     let transportChartsInitialized = false;
+    let projectsChartsInitialized = false;
 
     // --- Interactive AI Insight Generation ---
     function getInteractiveAiInsight(dashboardType) {
@@ -338,11 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (dashboardType === 'hr') {
             textElement = document.getElementById('hr-ai-insight-text');
-            // Simulate reading data from charts for analysis
-            const turnoverRate = 8.2;
-            const highPerformerRate = 22;
-            const specializedOccupancy = 88;
-
+            const turnoverRate = 8.2, highPerformerRate = 22, specializedOccupancy = 88;
             if (turnoverRate > 7) {
                 insights.push("يوجد مؤشر خطر في ارتفاع معدل الدوران الوظيفي، مما قد يؤدي إلى فقدان المواهب.");
                 recommendations.push("توصية استباقية: تطبيق برامج للاحتفاظ بالموظفين ذوي الأداء المرتفع وتحليل أسباب التسرب.");
@@ -355,13 +410,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 insights.push("انخفاض نسبة الموظفين ذوي الأداء العالي قد يؤثر على الابتكار والقدرة التنافسية.");
                 recommendations.push("توصية استباقية: مراجعة نظام تقييم الأداء وربطه ببرامج تطوير وتدريب موجهة.");
             }
-
         } else if (dashboardType === 'transport') {
             textElement = document.getElementById('transport-ai-insight-text');
-            // Simulate reading data
-            const recurringBreakdowns = 18;
-            const overdueMaintenance = 7;
-            
+            const recurringBreakdowns = 18, overdueMaintenance = 7;
             if (recurringBreakdowns > 15) {
                 insights.push(`النسبة المرتفعة للأعطال المتكررة (${recurringBreakdowns}%) تنبئ باحتمالية انخفاض أداء موردين محددين لقطع الغيار.`);
                 recommendations.push("توصية استباقية: تحليل الأعطال حسب نوع المركبة والمورد، والبدء في تقييم موردين بدلاء.");
@@ -369,6 +420,17 @@ document.addEventListener('DOMContentLoaded', function () {
             if (overdueMaintenance > 5) {
                 insights.push(`وجود ${overdueMaintenance} مركبات خارج الصيانة الدورية يزيد من خطر الأعطال المفاجئة وتوقف العمليات.`);
                 recommendations.push("توصية استباقية: إعادة جدولة فورية لصيانة هذه المركبات وتطبيق نظام تنبيه آلي للصيانة القادمة.");
+            }
+        } else if (dashboardType === 'projects') {
+            textElement = document.getElementById('projects-ai-insight-text');
+            const delayedProjects = 4, spendingRate = 70.8;
+            if (delayedProjects > 3) {
+                insights.push(`وجود ${delayedProjects} مشاريع متأخرة يشير إلى وجود اختناقات في الموارد أو تخطيط غير دقيق. السبب الرئيسي للتأخير هو 'نقص الموارد'.`);
+                recommendations.push("توصية استباقية: إعادة جدولة المشاريع المتأخرة فورًا مع تحليل الأسباب الجذرية، والنظر في إعادة توزيع الموارد أو توظيف مؤقت.");
+            }
+            if (spendingRate < 75) {
+                insights.push(`انخفاض نسبة الصرف (${spendingRate}%) قد يؤثر على التدفق النقدي للموردين ويؤخر تسليم المواد.`);
+                recommendations.push("توصية استباقية: مراجعة دورة المستخلصات وتسريع عمليات الدفع للمشاريع ذات الأولوية.");
             }
         }
 
@@ -470,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (drilldown) {
             options.onClick = getDrilldownOptions(chartLabel).onClick;
         }
-        charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: chartLabel, data: data, backgroundColor: color }] }, options });
+        charts[canvasId] = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: chartLabel, data: data, backgroundColor: color, borderRadius: 4 }] }, options });
     };
 
     // --- HR Dashboard ---
@@ -491,15 +553,12 @@ document.addEventListener('DOMContentLoaded', function () {
         createGaugeChart('performanceCompletionRateChart', 91.2, 100, '%', '#0ea5e9');
         createDonutChart('highPerformerRateChart', ['أداء مرتفع', 'أداء قياسي', 'أداء منخفض'], [275, 800, 75], ['#7c3aed', '#64748b', '#f43f5e']);
         createColumnChart('unassessedEmployeesChart', ['التسويق', 'المالية', 'العمليات', 'IT'], [20, 15, 40, 25], 'موظفون', '#f97316');
-        
-        // New Job Occupancy Charts
         createGaugeChart('occupancyGaugeSenior', 95, 100, '%', '#4f46e5');
         createGaugeChart('occupancyGaugeSpecialized', 88, 100, '%', '#0d9488');
         createGaugeChart('occupancyGaugeTechnical', 92, 100, '%', '#2563eb');
         createGaugeChart('occupancyGaugeDev', 85, 100, '%', '#db2777');
         createGaugeChart('occupancyGaugeClerical', 98, 100, '%', '#9333ea');
         createGaugeChart('occupancyGaugeAux', 100, 100, '%', '#65a30d');
-
         createLineChart('laborCasesChart', months, [1, 0, 1, 0, 0, 2], 'جزاءات', '#ef4444');
         createColumnChart('violationsChart', months, [12, 15, 10, 18, 14, 15], 'مخالفات', '#f59e0b');
         createAreaChart('totalWagesChart', months, [15.2, 15.3, 15.4, 15.5, 15.5, 15.6], 'التكلفة (مليون)', '#15803d');
@@ -537,6 +596,35 @@ document.addEventListener('DOMContentLoaded', function () {
         else { riskCard.classList.add('risk-high'); riskLabel.textContent = 'مرتفع'; }
         transportChartsInitialized = true;
     }
+    
+    // --- Projects Dashboard ---
+    function initProjectsCharts() {
+        // KPI Gauges
+        createGaugeChart('overallCompletionRateChart', 72.4, 100, '%', '#16a34a');
+        createGaugeChart('spendingRateChart', 70.8, 100, '%', '#f59e0b');
+
+        // New Detailed Charts
+        createDonutChart('projectStatusChart', ['منجزة', 'قيد التنفيذ', 'متأخرة'], [42, 12, 4], ['#16a34a', '#f59e0b', '#dc2626']);
+        createDonutChart('delayReasonsChart', ['نقص الموارد', 'مشاكل تمويل', 'تغيير النطاق', 'أخرى'], [45, 25, 20, 10], ['#ef4444', '#f97316', '#8b5cf6', '#64748b']);
+        
+        createGroupedBarChart('budgetVsSpendingChart', 
+            ['برنامج الكهرباء ', 'رصف الطرق', 'تحسين البيئة', 'تدعيم الوحدات المحلية', 'مشروع E'], 
+            [
+                { label: 'الموازنة الأصلية', data: [20, 30, 15, 25, 18], backgroundColor: '#3b82f6' },
+                { label: 'المنصرف الفعلي', data: [18, 25, 16, 21, 15], backgroundColor: '#16a34a' }
+            ]
+        );
+
+        createBarChart('projectDurationChart', 
+            ['برنامج الكهرباء ', 'رصف الطرق', 'تحسين البيئة', 'تدعيم الوحدات المحلية', 'مشروع E', 'مشروع F'], 
+            [24, 18, 36, 12, 20, 30], 
+            'مدة المشروع', 
+            '#8b5cf6',
+            true
+        );
+
+        projectsChartsInitialized = true;
+    }
 
     // --- Main Navigation ---
     const navLinks = document.querySelectorAll('.nav-link');
@@ -554,6 +642,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (targetId === 'transport-dashboard' && !transportChartsInitialized) {
                 initTransportDashboard();
+            } else if (targetId === 'projects-dashboard' && !projectsChartsInitialized) {
+                initProjectsCharts();
             }
         });
     });
@@ -571,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- AI Insight Button Listeners ---
     document.getElementById('generate-hr-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('hr', e));
     document.getElementById('generate-transport-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('transport', e));
-
+    document.getElementById('generate-projects-insight-btn').addEventListener('click', (e) => getInteractiveAiInsight('projects', e));
 
     // Initial Load
     initHrCharts();
